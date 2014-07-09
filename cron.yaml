@@ -1,4 +1,4 @@
 cron:
 - description: Check new rooms
-  url: /
+  url: /hello
   schedule: every 10 minutes
