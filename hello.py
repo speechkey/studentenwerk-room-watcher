@@ -70,4 +70,4 @@ class MainPage(webapp2.RequestHandler):
 		except TypeError:
 			return cleanStr.encode('utf-8')
 
-application = webapp2.WSGIApplication([('/', MainPage),], debug=True)
+application = webapp2.WSGIApplication([('/hello', MainPage),], debug=True)
