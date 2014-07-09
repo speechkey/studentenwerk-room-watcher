@@ -56,7 +56,7 @@ class MainPage(webapp2.RequestHandler):
 
 				self.response.write('Offer saved: ' + str(offer.code))
 
-				mail.send_mail("gremoz@gmail.com", "gremoz@gmail.com", "New appartments", offer.link)
+				mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", offer.link)
 
 	def offerExists(self, code):
 		offer_query = Offer.query(Offer.code == code)
