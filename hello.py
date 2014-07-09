@@ -54,7 +54,7 @@ class MainPage(webapp2.RequestHandler):
 				offer.square = float(self.trimSpaces(link.findNext("td", class_="groesse ").text))
 				offer.put()
 
-				self.response.write('Offer saved: ' + offer.code)
+				self.response.write('Offer saved: ' + str(offer.code))
 
 				mail.send_mail("gremoz@gmail.com", "gremoz@gmail.com", "New appartments", offer.link)
 
