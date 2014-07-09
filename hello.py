@@ -58,16 +58,17 @@ class MainPage(webapp2.RequestHandler):
 				offer.art = self.trimSpaces(link.findNext("td", class_="zimmerart ").text)
 				offer.roomNumber = float(self.trimSpaces(link.findNext("td", class_="anzahl ").text))
 				offer.square = float(self.trimSpaces(link.findNext("td", class_="groesse ").text))
-				#offer.put()
+				offer.put()
 				newOffers.add(offer)
 
 				self.response.write('Offer saved: ' + str(offer.code) + "\n")
 
-		offerContent = ""
-		for newOffer in newOffers:
-			offerContent += self.fetchOfferDetails(newOffer)
+		if len(newOffers) > 0:
+			offerContent = ""
+			for newOffer in newOffers:
+				offerContent += self.fetchOfferDetails(newOffer)
 
-		self.sendNotification(offerContent)
+			self.sendNotification(offerContent)
 
 	def getHeaders(self):
 		try:
@@ -87,6 +88,7 @@ class MainPage(webapp2.RequestHandler):
 		return offerInfo;
 
 	def sendNotification(self, content):
+		print content
 		mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", content)
 
 	def offerExists(self, code):
