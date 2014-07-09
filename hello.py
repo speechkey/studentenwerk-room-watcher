@@ -31,14 +31,20 @@ class Offer(ndb.Model):
 class MainPage(webapp2.RequestHandler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/plain'
-		self.response.write('Hello, World!')
+		self.response.write('Hello, Speechkey!\n\n')
 
-		self.fetchPage("http://www.studentenwerk-muenchen.de/wohnen/vermittlung-von-privatzimmern/angebote/")
+		self.processPage("http://www.studentenwerk-muenchen.de/wohnen/vermittlung-von-privatzimmern/angebote/")
+
 
 	def fetchPage(self, url):
-		r  =  urlfetch.fetch(url)
+		r  =  urlfetch.fetch(url=url, headers=self.getHeaders())
 		data = r.content
-		soup = BeautifulSoup(data)
+		return data
+
+	def processPage(self, url):
+		soup = BeautifulSoup(self.fetchPage(url))
+
+		newOffers = set()
 
 		for link in soup.find_all("tr", class_="tx_stwmprivatzimmervermittlung_list"):
 			#get code and check if its already in db
@@ -52,11 +58,36 @@ class MainPage(webapp2.RequestHandler):
 				offer.art = self.trimSpaces(link.findNext("td", class_="zimmerart ").text)
 				offer.roomNumber = float(self.trimSpaces(link.findNext("td", class_="anzahl ").text))
 				offer.square = float(self.trimSpaces(link.findNext("td", class_="groesse ").text))
-				offer.put()
+				#offer.put()
+				newOffers.add(offer)
 
-				self.response.write('Offer saved: ' + str(offer.code))
+				self.response.write('Offer saved: ' + str(offer.code) + "\n")
 
-				mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", offer.link)
+		offerContent = ""
+		for newOffer in newOffers:
+			offerContent += self.fetchOfferDetails(newOffer)
+
+		self.sendNotification(offerContent)
+
+	def getHeaders(self):
+		try:
+			import config
+			return {'Cookie': 'WRV_account=' + config.WRV_ACCOUNT}
+		except ImportError:
+			return {}
+
+	def fetchOfferDetails(self, offer):
+		soup = BeautifulSoup(self.fetchPage(offer.link))
+
+		offerInfo = ""
+		for table in soup.find_all("table", class_="tx_stwmprivatzimmervermittlung detail wrv_ausfuehrlich"):
+			offerInfo += "<br/><pre /><br/>"
+			offerInfo += str(table)
+
+		return offerInfo;
+
+	def sendNotification(self, content):
+		mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", content)
 
 	def offerExists(self, code):
 		offer_query = Offer.query(Offer.code == code)

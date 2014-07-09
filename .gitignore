@@ -1,2 +1,4 @@
+*.txt
+*.pyc
 .credentials
 .DS_Store
