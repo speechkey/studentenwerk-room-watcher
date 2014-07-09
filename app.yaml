@@ -7,4 +7,3 @@ threadsafe: true
 handlers:
 - url: /hello
   script: hello.application
-  login: admin
