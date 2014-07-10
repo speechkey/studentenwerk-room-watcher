@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 from google.appengine.api import urlfetch
 from google.appengine.api import mail
 import re
+import logging
 
 import sys
 sys.path.insert(0,'libs')
@@ -30,14 +31,11 @@ class Offer(ndb.Model):
 
 class MainPage(webapp2.RequestHandler):
 	def get(self):
-		self.response.headers['Content-Type'] = 'text/plain'
-		self.response.write('Hello, Speechkey!\n\n')
-
 		self.processPage("http://www.studentenwerk-muenchen.de/wohnen/vermittlung-von-privatzimmern/angebote/")
 
 
 	def fetchPage(self, url):
-		r  =  urlfetch.fetch(url=url, headers=self.getHeaders())
+		r = urlfetch.fetch(url=url, headers=self.getHeaders())
 		data = r.content
 		return data
 
@@ -62,19 +60,24 @@ class MainPage(webapp2.RequestHandler):
 				newOffers.add(offer)
 
 				self.response.write('Offer saved: ' + str(offer.code) + "\n")
+			else:
+				logging.info('Offer with code ' + code + ' already exists in the DB.')
 
 		if len(newOffers) > 0:
 			offerContent = ""
 			for newOffer in newOffers:
 				offerContent += self.fetchOfferDetails(newOffer)
-
+				logging.info('New offer with code ' + newOffer.code + ' found.')
 			self.sendNotification(offerContent)
+		else:
+			logging.info('No new offers found.')
 
 	def getHeaders(self):
 		try:
 			import config
 			return {'Cookie': 'WRV_account=' + config.WRV_ACCOUNT}
 		except ImportError:
+			logging.error('Unable to get configuration.')
 			return {}
 
 	def fetchOfferDetails(self, offer):
@@ -88,8 +91,8 @@ class MainPage(webapp2.RequestHandler):
 		return offerInfo;
 
 	def sendNotification(self, content):
-		print content
-		mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", content)
+		logging.info('Send new offers: ' + content)
+		mail.send_mail("studentenwerk-room-watcher@appspot.gserviceaccount.com", "gremoz@gmail.com", "New appartments", html=content)
 
 	def offerExists(self, code):
 		offer_query = Offer.query(Offer.code == code)
