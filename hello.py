@@ -61,13 +61,13 @@ class MainPage(webapp2.RequestHandler):
 
 				self.response.write('Offer saved: ' + str(offer.code) + "\n")
 			else:
-				logging.info('Offer with code ' + code + ' already exists in the DB.')
+				logging.info('Offer with code ' + str(code) + ' already exists in the DB.')
 
 		if len(newOffers) > 0:
 			offerContent = ""
 			for newOffer in newOffers:
 				offerContent += self.fetchOfferDetails(newOffer)
-				logging.info('New offer with code ' + newOffer.code + ' found.')
+				logging.info('New offer with code ' + str(newOffer.code) + ' found.')
 			self.sendNotification(offerContent)
 		else:
 			logging.info('No new offers found.')
